@@ -64,6 +64,7 @@ export PORT=1750 ;\
 export DATA_DIR="$PWD/data" ;\
 export PAIR="RLCBTC" ;\
   mkdir -p $DATA_DIR ;\
+  docker pull dmi7ry/significant-trades-server:latest ;\
   docker run --rm -d \
     -e DEFAULT_PORT=$PORT \
     -e DEFAULT_PAIR=$PAIR \
