@@ -106,7 +106,7 @@ make run
 # non-interactive|service run
 make up
 ```
-**Note** that container will run with **NAME** as described in `docker-compose.yml` `services.[]` variable
+**NOTE** Container will run with **NAME** as described in `docker-compose.yml` `services.[]` variable
 
 #### Stop
 ```shell
@@ -125,11 +125,11 @@ make shell
 ```shell
 make publish
 ```
-**Note**: Before publish you need to [register](https://hub.docker.com) and login on your workstation with
+**NOTE**: Before publish you need to [register](https://hub.docker.com) and login on your workstation with
 ```shell
 docker login
 ```
-**Note**: Image will publish with latest tag from Repo via `git describe --abbrev=0 --tags` and tag `latest`
+**NOTE**: Image will publish with latest tag from Repo via `git describe --abbrev=0 --tags` and tag `latest`
 
 *Like whats been done here ?* Donate BTC (segwit)<br>
 [3NuLQsrphzgKxTBU3Vunj87XADPvZqZ7gc](bitcoin:3NuLQsrphzgKxTBU3Vunj87XADPvZqZ7gc)
