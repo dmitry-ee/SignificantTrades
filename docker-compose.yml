@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  significant-trades-server:
+    image: ${DOCKER_ID_USER}/${APP_NAME}:${APP_VERSION}
+    build:
+      context: .
+    container_name: ${APP_NAME}
+    network_mode: "host"
+    ports:
+      - ${DEFAULT_PORT}:${DEFAULT_PORT}
+#    volumes:
+#      - /data/${APP_NAME}:/data
+    env_file:
+      - ${ENV_DIR}/.env
