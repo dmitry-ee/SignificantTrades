@@ -129,7 +129,7 @@ make publish
 ```shell
 docker login
 ```
-**NOTE**: Image will publish with latest tag from Repo via `git describe --abbrev=0 --tags` and tag `latest`
+**NOTE**: Image will publish with latest tag from repo via `git describe --abbrev=0 --tags` and tag `latest`
 
 *Like whats been done here ?* Donate BTC (segwit)<br>
 [3NuLQsrphzgKxTBU3Vunj87XADPvZqZ7gc](bitcoin:3NuLQsrphzgKxTBU3Vunj87XADPvZqZ7gc)
