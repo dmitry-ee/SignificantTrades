@@ -57,7 +57,7 @@ You also can run server inside Docker container
 
 ### Usage
 
-#### Run container standalone (without Docker Compose)
+### Run container standalone (without Docker Compose)
 *Much simplier way than run with Docker Compose*
 ```shell
 export PORT=1750 ;\
@@ -73,7 +73,7 @@ export PAIR="RLCBTC" ;\
     dmi7ry/significant-trades-server:latest
 ```
 
-#### Docker Compose (for dev purposes)
+### Docker Compose (for dev purposes)
 
 #### Variables
 You should check variables at `docker/.env`
