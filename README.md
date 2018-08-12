@@ -51,11 +51,30 @@ All settings are optional and can be changed in the [server configuration file](
 You also can run server in Docker container
 
 ### Dependencies
-- [Docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) 18.06.0+
+- [Docker](https://docs.docker.com/install/) 18.06.0+
 - [Docker Compose](https://docs.docker.com/compose/install/) 1.22.0+
 - [Gnu Make](https://www.gnu.org/software/make/) 4.1+
 
 ### Usage
+
+#### Variables
+You should check variables at `docker/.env`
+
+That's simply shell-like variables
+```shell
+DEFAULT_PORT=1750
+DEFAULT_PAIR=BTCUSD
+DELAY=500
+ORIGIN=*
+```
+Or/and inside `docker-compose.yml`
+```yaml
+env_file:
+  - ${ENV_DIR}/.env
+environment:
+  - DEFAULT_PORT=5000
+  - DEFAULT_PAIR=BTCUSD
+```
 
 #### Build
 ```shell
@@ -69,8 +88,17 @@ make run
 # non-interactive|service run
 make up
 ```
+**Note** that container will run with **NAME** as described in `docker-compose.yml` `services.[]` variable
 
-#### Diving inside container
+#### Stop
+```shell
+# stop container
+make stop
+# stop and remove container
+make STAHP
+```
+
+#### Diving into container
 ```shell
 make shell
 ```
@@ -83,19 +111,21 @@ make publish
 ```shell
 docker login
 ```
-**Note**: Image will publish automatively with current version from latest Git tag via `git describe --abbrev=0 --tags` and tag `latest`
+**Note**: Image will publish with latest tag from Repo via `git describe --abbrev=0 --tags` and tag `latest`
 
 #### Run container standalone without Docker Compose
+*Much more simplier way isn't it?*
 ```shell
-export PORT=3000 ;\
-  export DATA_DIR="$PWD/data" ;\
-  make -p $DATA_DIR ;\
+export PORT=1750 ;\
+export DATA_DIR="$PWD/data" ;\
+export PAIR="RLCBTC" ;\
+  mkdir -p $DATA_DIR ;\
   docker run --rm -d \
     -e DEFAULT_PORT=$PORT \
-    -e DEFAULT_PAIR=BTCUSD \
+    -e DEFAULT_PAIR=$PAIR \
     -p $PORT:$PORT \
     -v $DATA_DIR:/app/data \
-    --name significant-trades-server-btc \
+    --name significant-trades-server-$PAIR \
     dmi7ry/significant-trades-server:latest
 ```
 
