@@ -48,7 +48,7 @@ All settings are optional and can be changed in the [server configuration file](
 
 ## Docker
 
-You also can run server in Docker container
+You also can run server inside Docker container
 
 ### Dependencies
 - [Docker](https://docs.docker.com/install/) 18.06.0+

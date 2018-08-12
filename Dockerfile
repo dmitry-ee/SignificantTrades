@@ -19,7 +19,7 @@ RUN         set -ex ;\
             npm install ;\
             chmod +x docker-entrypoint.sh
 
-VOLUME ["${APP_DIR}${DATA_DIR}"]
+VOLUME      ["${APP_DIR}${DATA_DIR}"]
 
 ENV         PATH=.:$PATH
 
