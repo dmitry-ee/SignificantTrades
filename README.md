@@ -10,7 +10,7 @@ git clone https://github.com/Tucsky/SignificantTrades -b server server/
 2. Install server dependencies & run it
 
 ```bash
-cd server
+cd server/app
 npm install
 node index
 ```
@@ -35,15 +35,68 @@ All settings are optional and can be changed in the [server configuration file](
 
 ```js
 {
-  // the port which the server will be at 
+  // the port which the server will be at
   "port": 3000,
-  
+
   // delay (in ms) between server broadcasts to avoid large event saturation
   "delay": 200, // (the larger the better performance wise)
-  
-  // default pair it should use 
+
+  // default pair it should use
   "pair": "BTCUSD"
 }
+```
+
+## Docker
+
+You also can run server in Docker container
+
+### Dependencies
+- [Docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) 18.06.0+
+- [Docker Compose](https://docs.docker.com/compose/install/) 1.22.0+
+- [Gnu Make](https://www.gnu.org/software/make/) 4.1+
+
+### Usage
+
+#### Build
+```shell
+make build
+```
+
+#### Run
+```shell
+# interactive mode
+make run
+# non-interactive|service run
+make up
+```
+
+#### Diving inside container
+```shell
+make shell
+```
+
+#### Publish container to Docker Hub
+```shell
+make publish
+```
+**Note**: Before publish you need to [register](https://hub.docker.com) and login on your workstation with
+```shell
+docker login
+```
+**Note**: Image will publish automatively with current version from latest Git tag via `git describe --abbrev=0 --tags` and tag `latest`
+
+#### Run container standalone without Docker Compose
+```shell
+export PORT=3000 ;\
+  export DATA_DIR="$PWD/data" ;\
+  make -p $DATA_DIR ;\
+  docker run --rm -d \
+    -e DEFAULT_PORT=$PORT \
+    -e DEFAULT_PAIR=BTCUSD \
+    -p $PORT:$PORT \
+    -v $DATA_DIR:/app/data \
+    --name significant-trades-server-btc \
+    dmi7ry/significant-trades-server:latest
 ```
 
 *Like whats been done here ?* Donate BTC (segwit)<br>

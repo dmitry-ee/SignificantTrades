@@ -1,4 +1,4 @@
-version: '3'
+version: '3.6'
 
 services:
   significant-trades-server:
@@ -9,7 +9,14 @@ services:
     network_mode: "host"
     ports:
       - ${DEFAULT_PORT}:${DEFAULT_PORT}
-#    volumes:
-#      - /data/${APP_NAME}:/data
+    volumes:
+      - ./data:${APP_DIR}/data
+    restart: always
+
+#NOTE: you could supply environment vars with directive:>
     env_file:
       - ${ENV_DIR}/.env
+#NOTE: or
+    environment:
+      - DEFAULT_PORT=5000
+#NOTE: see full list of env vars in ./docker/.env or ./app/config.json.example
