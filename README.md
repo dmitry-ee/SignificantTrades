@@ -58,7 +58,7 @@ You also can run server inside Docker container
 ### Usage
 
 ### Run container standalone (without Docker Compose)
-*Much simplier way than run with Docker Compose*
+*Much simplier way than run compared to Docker Compose*
 ```shell
 export PORT=1750 ;\
 export DATA_DIR="$PWD/data" ;\
