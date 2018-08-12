@@ -113,7 +113,7 @@ docker login
 ```
 **Note**: Image will publish with latest tag from Repo via `git describe --abbrev=0 --tags` and tag `latest`
 
-#### Run container standalone without Docker Compose
+#### Run container standalone (without Docker Compose)
 *Much more simplier way isn't it?*
 ```shell
 export PORT=1750 ;\
