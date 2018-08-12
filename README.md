@@ -57,6 +57,24 @@ You also can run server inside Docker container
 
 ### Usage
 
+#### Run container standalone (without Docker Compose)
+*Much simplier way than run with Docker Compose*
+```shell
+export PORT=1750 ;\
+export DATA_DIR="$PWD/data" ;\
+export PAIR="RLCBTC" ;\
+  mkdir -p $DATA_DIR ;\
+  docker run --rm -d \
+    -e DEFAULT_PORT=$PORT \
+    -e DEFAULT_PAIR=$PAIR \
+    -p $PORT:$PORT \
+    -v $DATA_DIR:/app/data \
+    --name significant-trades-server-$PAIR \
+    dmi7ry/significant-trades-server:latest
+```
+
+#### Docker Compose (for dev purposes)
+
 #### Variables
 You should check variables at `docker/.env`
 
@@ -112,22 +130,6 @@ make publish
 docker login
 ```
 **Note**: Image will publish with latest tag from Repo via `git describe --abbrev=0 --tags` and tag `latest`
-
-#### Run container standalone (without Docker Compose)
-*Much more simplier way isn't it?*
-```shell
-export PORT=1750 ;\
-export DATA_DIR="$PWD/data" ;\
-export PAIR="RLCBTC" ;\
-  mkdir -p $DATA_DIR ;\
-  docker run --rm -d \
-    -e DEFAULT_PORT=$PORT \
-    -e DEFAULT_PAIR=$PAIR \
-    -p $PORT:$PORT \
-    -v $DATA_DIR:/app/data \
-    --name significant-trades-server-$PAIR \
-    dmi7ry/significant-trades-server:latest
-```
 
 *Like whats been done here ?* Donate BTC (segwit)<br>
 [3NuLQsrphzgKxTBU3Vunj87XADPvZqZ7gc](bitcoin:3NuLQsrphzgKxTBU3Vunj87XADPvZqZ7gc)
