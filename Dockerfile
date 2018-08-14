@@ -17,7 +17,9 @@ RUN         set -ex ;\
             chmod +rw ${APP_DIR}${DATA_DIR} ;\
             apk add --no-cache bash ;\
             npm install ;\
-            chmod +x docker-entrypoint.sh
+            chmod +x docker-entrypoint.sh ;\
+            rm -rf /var/lib/apt/lists/* ;\
+            rm -rf /var/cache/apk/*
 
 VOLUME      ["${APP_DIR}${DATA_DIR}"]
 
