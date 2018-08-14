@@ -2,7 +2,6 @@
 APP_VERSION			= $(shell git describe --abbrev=0 --tags)
 APP_NAME				= significant-trades-server
 APP_DIR					= /app
-ENV_DIR					= ./docker
 DOCKER_ID_USER	= dmi7ry
 SERVER_DATA_DIR = ./data
 
@@ -11,7 +10,6 @@ SERVER_DATA_DIR = ./data
 #.PHONY:
 
 #set-env:
-#	export $(shell $(grep -v '^#' ${ENV_DIR}/${ENV_FILE} | xargs) )
 
 all: build up
 
@@ -20,6 +18,9 @@ build:
 
 build-verbose:
 	docker-compose --verbose build
+
+config:
+	docker-compose --verbose config
 
 release:
 	export APP_VERSION=latest ;\

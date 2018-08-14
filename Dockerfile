@@ -1,13 +1,12 @@
 FROM        mhart/alpine-node:10
 ARG         APP_DIR=/app
 ARG         DATA_DIR=/data
-ARG         ENV_DIR=./docker
 ARG         USER_NAME=sig-trades
 
 WORKDIR     $APP_DIR
 
-COPY        ${APP_DIR}                        ${APP_DIR}
-COPY        ${ENV_DIR}/docker-entrypoint.sh   ${APP_DIR}
+COPY        ${APP_DIR}             ${APP_DIR}
+COPY        docker-entrypoint.sh   ${APP_DIR}
 
 RUN         set -ex ;\
             addgroup -g 1000 -S ${USER_NAME} ;\
