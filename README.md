@@ -77,7 +77,7 @@ export PAIR="RLCBTC" ;\
 ### Docker Compose (for dev purposes)
 
 #### Variables
-You should check variables at `docker/.env`
+Check the variables inside `.env`
 
 That's simply shell-like variables
 ```shell
@@ -89,7 +89,7 @@ ORIGIN=*
 Or/and inside `docker-compose.yml`
 ```yaml
 env_file:
-  - ${ENV_DIR}/.env
+  - .env
 environment:
   - DEFAULT_PORT=5000
   - DEFAULT_PAIR=BTCUSD

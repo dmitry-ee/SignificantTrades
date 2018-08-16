@@ -1,4 +1,4 @@
-version: '3.6'
+version: '3'
 
 services:
   significant-trades-server:
@@ -15,8 +15,8 @@ services:
 
 #NOTE: you could supply environment vars with directive:>
     env_file:
-      - ${ENV_DIR}/.env
+      - .env
 #NOTE: or
-    environment:
-      - DEFAULT_PORT=5000
+#    environment:
+#      - DEFAULT_PORT=5000
 #NOTE: see full list of env vars in ./docker/.env or ./app/config.json.example
