@@ -11,9 +11,6 @@ SERVER_DATA_DIR = ./data
 
 all: build up
 
-set-env:
-	printenv
-
 build:
 	docker-compose build
 
