@@ -184,7 +184,7 @@ class Server extends EventEmitter {
 		});
 
 		this.profilerInterval = setInterval(this.profiler.bind(this), this.options.profilerInterval);
-		this.backupInterval = setInterval(this.backup.bind(this), this.options.backupInterval);
+		// this.backupInterval = setInterval(this.backup.bind(this), this.options.backupInterval);
 
 		this.http = http.createServer((request, response) => {
 			response.setHeader('Access-Control-Allow-Origin', this.options.origin);
@@ -195,8 +195,8 @@ class Server extends EventEmitter {
 				ip = ip.substr('::ffff:'.length, ip.length);
 			}
 
-			const path = url.parse(request.url).path;			
-			
+			const path = url.parse(request.url).path;
+
 			let helloworld = true;
 
 			const routes = [{
@@ -420,11 +420,11 @@ class Server extends EventEmitter {
 
 			if (now - this.timestamps[exchange.id] > 1000 * 60 * 5) {
 				console.log('[warning] ' + exchange.id + ' hasn\'t sent any data since more than 5 minutes');
-				
+
 				delete this.timestamps[exchange.id];
-				
+
 				exchange.disconnect() && exchange.reconnect(this.options.pair);
-				
+
 				return;
 			}
 		})
@@ -453,7 +453,7 @@ class Server extends EventEmitter {
 	backup(exit = false) {
 		if (!this.chunk.length) {
 			exit && process.exit();
-			
+
 			return;
 		}
 

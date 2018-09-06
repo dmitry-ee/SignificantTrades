@@ -37,7 +37,7 @@ else
 fi
 
 if [[ ! -f "config.json" ]]; then
-  echo "{ \"port\": \"$STS_DEFAULT_PORT\", \"delay\":\"$STS_DELAY\", \"pair\":\"$STS_DEFAULT_PAIR\", \"origin\":\"$STS_ORIGIN\", \"backupInterval\":0 }" > "config.json"
+  echo "{ \"port\": \"$STS_DEFAULT_PORT\", \"delay\":\"$STS_DELAY\", \"pair\":\"$STS_DEFAULT_PAIR\", \"origin\":\"$STS_ORIGIN\" }" > "config.json"
   echo "successfuly created config.json file: >"
   cat ./config.json
 fi
