@@ -15,7 +15,6 @@ RUN         set -ex ;\
             chown -R ${USER_NAME}:${USER_NAME} ${APP_DIR} ;\
             chmod +rw ${APP_DIR}${DATA_DIR} ;\
             apk add --no-cache bash ;\
-            apk --no-cache add curl ;\
             npm install ;\
             chmod +x docker-entrypoint.sh ;\
             rm -rf /var/lib/apt/lists/* ;\

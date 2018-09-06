@@ -8,7 +8,7 @@ services:
     container_name: ${APP_NAME}
     network_mode: "host"
     ports:
-      - ${DEFAULT_PORT}:${DEFAULT_PORT}
+      - ${STS_DEFAULT_PORT}:${STS_DEFAULT_PORT}
     volumes:
       - ./data:${APP_DIR}/data
     restart: always

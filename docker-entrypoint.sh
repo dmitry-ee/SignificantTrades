@@ -9,35 +9,40 @@ echo -e "\nHELLO THERE! THIS IS SIGNIFICANT TRADES SERVER"
 echo -e "Project ${RED}https://github.com/Tucsky/SignificantTrades/${NC}"
 echo -e "Liked? Donate: ${RED}BTC:3GLyZHY8gRS96sH4J9Vw6s1NuE4tWcZ3hX${NC}\n"
 
-if [ ! -z "$VERBOSE" ]; then
+if [ ! -z "$STS_VERBOSE" ]; then
   printenv
   set -ex
 fi
 
-if [ -z "$DEFAULT_PORT" ]; then
-  DEFAULT_PORT="3000"
-  echo "DEFAULT_PORT is not set, using $DEFAULT_PORT by default"
+if [ -z "$STS_DEFAULT_PORT" ]; then
+  STS_DEFAULT_PORT="3000"
+  echo "STS_DEFAULT_PORT is not set, using $STS_DEFAULT_PORT by default"
 fi
-if [ -z "$DELAY" ]; then
-  DELAY="200"
-  echo "DELAY is not set, using $DELAY by default"
+if [ -z "$STS_DELAY" ]; then
+  STS_DELAY="200"
+  echo "STS_DELAY is not set, using $STS_DELAY by default"
 fi
-if [ -z "$DEFAULT_PAIR" ]; then
-  DEFAULT_PAIR="BTCUSD"
-  echo "DEFAULT_PAIR is not set, using $DEFAULT_PAIR by default"
+if [ -z "$STS_DEFAULT_PAIR" ]; then
+  STS_DEFAULT_PAIR="BTC/USD"
+  echo "STS_DEFAULT_PAIR is not set, using $STS_DEFAULT_PAIR by default"
 fi
-if [ -z "$ORIGIN" ]; then
-  ORIGIN="*"
-  echo "ORIGIN is not set, using $ORIGIN by default"
+if [ -z "$STS_ORIGIN" ]; then
+  STS_ORIGIN="*"
+  echo "STS_ORIGIN is not set, using $STS_ORIGIN by default"
+fi
+if [[ $STS_DEFAULT_PAIR = *"/"* ]]; then
+  STS_DEFAULT_PAIR="${STS_DEFAULT_PAIR//[\/]}"
+else
+  echo "STS_DEFAULT_PAIR=${STS_DEFAULT_PAIR} DOESN'T CONTAIN '/' SYMBOL, DOESN'T MATTER BUT COMPABILITY WITH OTHER STUFF WILL LOST"
 fi
 
 if [[ ! -f "config.json" ]]; then
-  echo "{ \"port\": \"$DEFAULT_PORT\", \"delay\":\"$DELAY\", \"pair\":\"$DEFAULT_PAIR\", \"origin\":\"$ORIGIN\" }" > "config.json"
+  echo "{ \"port\": \"$STS_DEFAULT_PORT\", \"delay\":\"$STS_DELAY\", \"pair\":\"$STS_DEFAULT_PAIR\", \"origin\":\"$STS_ORIGIN\" }" > "config.json"
   echo "successfuly created config.json file: >"
   cat ./config.json
 fi
 
-echo "LISTENING $DEFAULT_PORT FOR PAIR $DEFAULT_PAIR"
+echo "LISTENING $STS_DEFAULT_PORT FOR PAIR $STS_DEFAULT_PAIR"
 
 if [[ "$1" == "run" ]]; then
   exec node index
