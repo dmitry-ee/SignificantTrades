@@ -9,8 +9,6 @@ services:
     network_mode: "host"
     ports:
       - ${STS_DEFAULT_PORT}:${STS_DEFAULT_PORT}
-    volumes:
-      - ./data:${APP_DIR}/data
     restart: always
 
 #NOTE: you could supply environment vars with directive:>
