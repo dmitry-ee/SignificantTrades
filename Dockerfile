@@ -12,7 +12,7 @@ RUN         set -ex ;\
             addgroup -g 1000 -S ${USER_NAME} ;\
             adduser -u 1000 -S $USER_NAME -G ${USER_NAME} ;\
             chown -R ${USER_NAME}:${USER_NAME} ${APP_DIR} ;\
-            apk add --no-cache bash ;\
+            apk add --no-cache bash curl ;\
             npm install ;\
             chmod +x docker-entrypoint.sh ;\
             rm -rf /var/lib/apt/lists/* ;\
