@@ -5,8 +5,8 @@ ARG         USER_NAME=sig-trades
 
 WORKDIR     $APP_DIR
 
-COPY        ${APP_DIR}            ${APP_DIR}
-COPY        docker-entrypoint.sh  ${APP_DIR}
+COPY        docker-entrypoint.sh    ${APP_DIR}
+COPY        ${APP_DIR}/package.json ${APP_DIR}
 
 RUN         set -ex ;\
             addgroup -g 1000 -S ${USER_NAME} ;\
@@ -20,6 +20,7 @@ RUN         set -ex ;\
 
 ENV         PATH=.:$PATH
 
+COPY        ${APP_DIR}            ${APP_DIR}
 USER        ${USER_NAME}
 
 ENTRYPOINT  ["docker-entrypoint.sh"]
