@@ -139,7 +139,7 @@ class Server extends EventEmitter {
 				for (let trade of event.data) {
 					trade.unshift(event.exchange);
 
-					this.chunk.push(trade);
+					// ((this.chunk.push(trade);
 
 					if (this.options.delay) {
 						this.queue.unshift(trade);
