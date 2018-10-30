@@ -1,5 +1,6 @@
 const Exchange = require('../exchange');
 const WebSocket = require('ws');
+const pako = require('pako')
 
 class Okex extends Exchange {
 
@@ -16,7 +17,7 @@ class Okex extends Exchange {
 
         return this.pairs[pair].toLowerCase();
       }
-      
+
       return false;
     }
 
@@ -522,10 +523,11 @@ class Okex extends Exchange {
 	}
 
 	connect(pair) {
-    if (!super.connect(pair))  
+    if (!super.connect(pair))
       return;
 
     this.api = new WebSocket(this.getUrl());
+    this.api.binaryType = 'ArrayBuffer';
 
     this.api.on('message', event => this.emitData(this.format(event)));
 
@@ -535,7 +537,7 @@ class Okex extends Exchange {
       this.api.send(JSON.stringify({event: 'addChannel', channel: channel}));
 
       this.keepalive = setInterval(() => {
-        this.api.send(JSON.stringify({event: 'ping'}));
+        this.api.readyState === 1 && this.api.send(JSON.stringify({event: 'ping'}));
       }, 30000);
 
       this.emitOpen(event);
@@ -551,7 +553,7 @@ class Okex extends Exchange {
 	}
 
 	disconnect() {
-    if (!super.disconnect())  
+    if (!super.disconnect())
       return;
 
     clearInterval(this.keepalive);
@@ -564,7 +566,19 @@ class Okex extends Exchange {
 	}
 
 	format(event) {
-    const json = JSON.parse(event);
+    let json;
+
+    try {
+      if (event instanceof String) {
+        json = JSON.parse(event);
+      } else {
+        json = JSON.parse(pako.inflateRaw(event, {to: 'string'}));
+      }
+    } catch (error) {
+      console.error(`[okex] failed to parse event data`, error);
+      return;
+    }
+
     const initial = typeof this.reference === 'undefined';
 
     if (!json || !json[0] || json[0].channel === 'addChannel') {
