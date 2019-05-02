@@ -36,7 +36,7 @@ else
 fi
 
 # NOTE: ADDED 02.05.19
-DEFAULT_RUN_APPEND="origin=* maxFetchUsage=0 fetchUsageResetInterval=0 websocket=true storage=none backupInterval=$MAX_INT"
+DEFAULT_RUN_APPEND="origin=.* maxFetchUsage=0 fetchUsageResetInterval=0 websocket=true storage=none backupInterval=$MAX_INT"
 RUN_CMD="port=$STS_DEFAULT_PORT delay=$STS_DELAY pair=$STS_DEFAULT_PAIR $DEFAULT_RUN_APPEND"
 # ###
 
