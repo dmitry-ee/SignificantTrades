@@ -19,33 +19,34 @@ if [ -z "$STS_DEFAULT_PORT" ]; then
   echo "STS_DEFAULT_PORT is not set, using $STS_DEFAULT_PORT by default"
 fi
 if [ -z "$STS_DELAY" ]; then
-  STS_DELAY="200"
+  STS_DELAY="1000"
   echo "STS_DELAY is not set, using $STS_DELAY by default"
 fi
 if [ -z "$STS_DEFAULT_PAIR" ]; then
   STS_DEFAULT_PAIR="BTC/USD"
   echo "STS_DEFAULT_PAIR is not set, using $STS_DEFAULT_PAIR by default"
 fi
-if [ -z "$STS_ORIGIN" ]; then
-  STS_ORIGIN="*"
-  echo "STS_ORIGIN is not set, using $STS_ORIGIN by default"
-fi
+
 if [[ $STS_DEFAULT_PAIR = *"/"* ]]; then
   STS_DEFAULT_PAIR="${STS_DEFAULT_PAIR//[\/]}"
 else
   echo "STS_DEFAULT_PAIR=${STS_DEFAULT_PAIR} DOESN'T CONTAIN '/' SYMBOL, DOESN'T MATTER BUT COMPABILITY WITH OTHER STUFF WILL LOST"
 fi
 
-if [[ ! -f "config.json" ]]; then
-  echo "{ \"port\": \"$STS_DEFAULT_PORT\", \"delay\":\"$STS_DELAY\", \"pair\":\"$STS_DEFAULT_PAIR\", \"origin\":\"$STS_ORIGIN\" }" > "config.json"
-  echo "successfuly created config.json file: >"
-  cat ./config.json
-fi
+# NOTE: ADDED 02.05.19
+DEFAULT_RUN_APPEND=" origin=* maxFetchUsage=0 fetchUsageResetInterval=0 websocket=true storage=none backupInterval=false "
+# ###
+
+# if [[ ! -f "config.json" ]]; then
+#   echo "{ \"port\": \"$STS_DEFAULT_PORT\", \"delay\":\"$STS_DELAY\", \"pair\":\"$STS_DEFAULT_PAIR\", \"origin\":\"$STS_ORIGIN\" }" > "config.json"
+#   echo "successfuly created config.json file: >"
+#   cat ./config.json
+# fi
 
 echo "LISTENING $STS_DEFAULT_PORT FOR PAIR $STS_DEFAULT_PAIR"
 
 if [[ "$1" == "run" ]]; then
-  exec node index
+  exec node index "port=$STS_DEFAULT_PORT delay=$STS_DELAY pair=$STS_DEFAULT_PAIR $DEFAULT_RUN_APPEND"
 fi
 
 exec "$@"

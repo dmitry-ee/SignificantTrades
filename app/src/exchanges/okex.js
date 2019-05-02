@@ -567,7 +567,7 @@ class Okex extends Exchange {
 
 	format(event) {
     let json;
-
+    
     try {
       if (event instanceof String) {
         json = JSON.parse(event);

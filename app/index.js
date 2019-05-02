@@ -1,5 +1,6 @@
 const fs = require('fs');
-const probe = require('pmx').probe();
+const pmx = require('pmx');
+const probe = pmx.probe();
 
 console.log('PID: ', process.pid);
 
@@ -26,8 +27,24 @@ try {
 */
 
 if (process.argv.length > 2) {
-	config.exchanges = process.argv.slice(2);
-} else if (!config.exchanges || !config.exchanges.length) {
+	let exchanges = [];
+
+	process.argv.slice(2).forEach(arg => {
+		const keyvalue = arg.split('=');
+		
+		if (keyvalue.length === 1) {
+			exchanges.push(arg);
+		} else {
+			config[keyvalue[0]] = keyvalue[1];
+		}
+	})
+
+	if (exchanges.length) {
+		config.exchanges = exchanges;
+	}
+}
+
+if (!config.exchanges || !config.exchanges.length) {
 	config.exchanges = [];
 
 	fs.readdirSync('./src/exchanges/').forEach(file => {
@@ -50,12 +67,52 @@ const server = new Server(config);
 */
 
 if (process.env.pmx) {
-	const listeners = probe.metric({
-		name: 'Connections'
+	const currently_online = probe.metric({
+		name: 'Online'
+	});
+
+	const unique_visitors = probe.metric({
+		name: 'Unique'
+	});
+
+	const stored_quotas = probe.metric({
+		name: 'Quotas'
 	});
 
 	server.on('connections', n => {
-		listeners.set(n);
+		currently_online.set(n);
+	});
+
+	server.on('unique', n => {
+		unique_visitors.set(n);
+	});
+
+	server.on('quotas', n => {
+		stored_quotas.set(n);
+	});
+
+	pmx.action('notice', function(message, reply) {
+		if (!message || typeof message !== 'string' || !message.trim().length) {
+			server.notice = null;
+
+			server.broadcast({
+				type: 'message'
+			});
+
+			reply(`Notice deleted`);
+		} else {
+			const alert = {
+				type: 'message',
+				message: message,
+				timestamp: +new Date()
+			};
+
+			server.broadcast(alert)
+
+			server.notice = alert;
+
+			reply(`Notice pinned "${message}"`);
+		}
 	});
 }
 
@@ -65,5 +122,13 @@ if (process.env.pmx) {
 process.on('SIGINT', function() {
 	console.log('SIGINT');
 
-	server.backup(true);
+	Promise.all([server.updatePersistence(), server.backupTrades()]).then(data => {
+		console.log('[server/exit] Goodbye')
+
+		process.exit();
+	}).catch(err => {
+		console.log(`[server/exit] Something went wrong when executing SIGINT script${err && err.message ? "\n\t" + err.message : ''}`);
+
+		process.exit();
+	})
 });

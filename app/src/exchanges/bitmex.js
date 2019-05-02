@@ -11,12 +11,11 @@ class Bitmex extends Exchange {
 		this.mapping = {
 			ETHUSD: 'ETHUSD',
 			BTCUSD: 'XBTUSD',
-			EOSBTC: 'EOSU18',
-			ADABTC: 'ADAU18',
-			BCHBTC: 'BCHU18',
-			ETHBTC: 'ETHU18',
-			LTCBTC: 'LTCU18',
-			XRPBTC: 'XRPU18',
+			ADABTC: 'ADAM18',
+			BCHBTC: 'BCHM18',
+			ETHBTC: 'ETHM18',
+			LTCBTC: 'LTCM18',
+			XRPBTC: 'XRPM18',
 		}
 
 		this.options = Object.assign({
