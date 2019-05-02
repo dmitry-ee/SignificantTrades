@@ -30,8 +30,9 @@ if (process.argv.length > 2) {
 	let exchanges = [];
 
 	process.argv.slice(2).forEach(arg => {
-		const keyvalue = arg.split('=');
-		
+		let keyvalue = arg.split('=');
+		console.log(keyvalue)
+
 		if (keyvalue.length === 1) {
 			exchanges.push(arg);
 		} else {

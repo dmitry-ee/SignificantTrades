@@ -5,6 +5,8 @@
 RED='\033[0;31m'  # Red color
 NC='\033[0m'      # No Color
 
+MAX_INT="2147483647"
+
 echo -e "\nHELLO THERE! THIS IS SIGNIFICANT TRADES SERVER"
 echo -e "Project ${RED}https://github.com/Tucsky/SignificantTrades/${NC}"
 echo -e "Liked? Donate: ${RED}BTC:3GLyZHY8gRS96sH4J9Vw6s1NuE4tWcZ3hX${NC}\n"
@@ -34,7 +36,8 @@ else
 fi
 
 # NOTE: ADDED 02.05.19
-DEFAULT_RUN_APPEND=" origin=* maxFetchUsage=0 fetchUsageResetInterval=0 websocket=true storage=none backupInterval=false "
+DEFAULT_RUN_APPEND="origin=* maxFetchUsage=0 fetchUsageResetInterval=0 websocket=true storage=none backupInterval=$MAX_INT"
+RUN_CMD="port=$STS_DEFAULT_PORT delay=$STS_DELAY pair=$STS_DEFAULT_PAIR $DEFAULT_RUN_APPEND"
 # ###
 
 # if [[ ! -f "config.json" ]]; then
@@ -44,9 +47,10 @@ DEFAULT_RUN_APPEND=" origin=* maxFetchUsage=0 fetchUsageResetInterval=0 websocke
 # fi
 
 echo "LISTENING $STS_DEFAULT_PORT FOR PAIR $STS_DEFAULT_PAIR"
+echo "RUN CMD: $RUN_CMD"
 
 if [[ "$1" == "run" ]]; then
-  exec node index "port=$STS_DEFAULT_PORT delay=$STS_DELAY pair=$STS_DEFAULT_PAIR $DEFAULT_RUN_APPEND"
+  exec node index $RUN_CMD
 fi
 
 exec "$@"

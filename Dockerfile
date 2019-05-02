@@ -1,18 +1,12 @@
 FROM        mhart/alpine-node:10
 ARG         APP_DIR=/app
-ARG         DATA_DIR=/data
-ARG         USER_NAME=sig-trades
 
 WORKDIR     $APP_DIR
 
-COPY        docker-entrypoint.sh    ${APP_DIR}
-COPY        ${APP_DIR}/package.json ${APP_DIR}
+COPY        docker-entrypoint.sh ${APP_DIR}/package.json         ${APP_DIR}/
 
 RUN         set -ex ;\
-            addgroup -g 1000 -S ${USER_NAME} ;\
-            adduser -u 1000 -S $USER_NAME -G ${USER_NAME} ;\
-            chown -R ${USER_NAME}:${USER_NAME} ${APP_DIR} ;\
-            apk add --no-cache bash curl ;\
+            apk add bash ;\
             npm install ;\
             chmod +x docker-entrypoint.sh ;\
             rm -rf /var/lib/apt/lists/* ;\
@@ -20,8 +14,8 @@ RUN         set -ex ;\
 
 ENV         PATH=.:$PATH
 
-COPY        ${APP_DIR}            ${APP_DIR}
-USER        ${USER_NAME}
+COPY        ${APP_DIR}/src      ${APP_DIR}/src
+COPY        ${APP_DIR}/index.js ${APP_DIR}/config.json.example   ${APP_DIR}/
 
 ENTRYPOINT  ["docker-entrypoint.sh"]
 

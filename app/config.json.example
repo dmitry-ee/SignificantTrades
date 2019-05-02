@@ -1,6 +1,6 @@
 {
-	"port": 3000,
-	"delay": 200,
-	"pair": "BTCUSD",
-	"origin": ".*"
+  "origin": ".*",
+  "websocket": "true",
+  "storage": "none",
+  "backupInterval": 2147483647
 }

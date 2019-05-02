@@ -3,7 +3,6 @@ APP_VERSION			= $(shell git describe --abbrev=0 --tags)
 APP_NAME				= significant-trades-server
 APP_DIR					= /app
 DOCKER_ID_USER	= dmi7ry
-SERVER_DATA_DIR = ./data
 
 #.DEFAULT_GOAL := set-env
 
@@ -25,14 +24,12 @@ release:
 	docker-compose build
 
 up:
-	mkdir -p $(SERVER_DATA_DIR)
 	docker-compose up -d $(APP_NAME)
 
 down:
 	docker-compose down
 
 run:
-	mkdir -p $(SERVER_DATA_DIR)
 	docker-compose up $(APP_NAME)
 stop:
 	docker-compose stop $(APP_NAME)
