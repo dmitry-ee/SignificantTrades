@@ -280,6 +280,7 @@ class Huobi extends Exchange {
       return;
     } else if (json.tick && json.tick.data && json.tick.data.length) {
       return json.tick.data.map(trade => [
+        this.id,
         trade.ts,
         +trade.price,
         +trade.amount,

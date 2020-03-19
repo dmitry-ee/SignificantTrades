@@ -39,8 +39,11 @@ class Server extends EventEmitter {
 			// admin access type (whitelist, all, none)
 			admin: 'whitelist',
 
-			// enable websocket server on startup (if you only use this for storing trade data set to false)
+			// enable websocket server (if you only use this for storing trade data set to false)
 			websocket: true,
+
+			// enable api (historical/{from: timestamp}/{to: timestamp})
+			api: true,
 
 			// storage solution, either 
 			// "none" (no storage, everything is wiped out after broadcast)
@@ -61,6 +64,9 @@ class Server extends EventEmitter {
 			// create new text file every N ms when storage is set to "file"
 			filesInterval: 3600000,
 
+			// default place to store the trades data files
+			filesLocation: './data'
+
 		}, options);
 
 		if (!this.options.exchanges || !this.options.exchanges.length) {
@@ -80,8 +86,7 @@ class Server extends EventEmitter {
 			trades: 0,
 			volume: 0,
 			hits: 0,
-			unique: 0,
-			ips: [],
+			unique: 0
 		}
 
 		if (fs.existsSync('./persistence.json')) {
@@ -126,7 +131,9 @@ class Server extends EventEmitter {
 			}
 
 			setTimeout(() => {
-				console.log(`[server] Fetch API unlocked`);
+				if (this.options.api) {
+					console.log(`[server] Fetch API unlocked`);
+				}
 
 				this.lockFetch = false;
 			}, 1000 * 60);
@@ -134,8 +141,14 @@ class Server extends EventEmitter {
 	}
 
 	initStorage() {
-		if (this.options.storage) {
-			this.storage = new (require(`./storage/${this.options.storage}`))(this.options);
+		if (this.options.storage && this.options.storage !== 'none') {
+      try {
+        this.storage = new (require(`./storage/${this.options.storage}`))(this.options);
+      } catch (error) {
+        console.log(error);
+
+        return Promise.resolve();
+      }
 
 			console.log(`[server/backup] Using "${this.options.storage}" storage solution`);
 
@@ -156,7 +169,7 @@ class Server extends EventEmitter {
 			return Promise.resolve();
 		}
 
-		console.log(`[server/storage] backup ${this.chunk.length} trades`);
+  	process.stdout.write(`[server/storage] backup ${this.chunk.length} trades\t\t\t\r`)
 
 		return this.storage.save(this.chunk.splice(0, this.chunk.length));
 	}
@@ -164,14 +177,12 @@ class Server extends EventEmitter {
 	handleExchangesEvents() {
 		this.exchanges.forEach(exchange => {
 			exchange.on('data', event => {
-				this.timestamps[event.exchange] = +new Date();
+        this.timestamps[event.exchange] = +new Date();
 
 				this.stats.trades += event.data.length;
 
 				for (let trade of event.data) {
-					this.stats.volume += trade[2];
-
-					trade.unshift(event.exchange);
+					this.stats.volume += trade[3];
 
 					this.chunk.push(trade);
 
@@ -232,10 +243,6 @@ class Server extends EventEmitter {
 			const usage = this.getUsage(ip);
 
 			this.stats.hits++;
-
-			if (this.stats.ips.indexOf(ip) === -1) {
-				this.stats.ips.push(ip);
-			}
 
 			const data = {
 				type: 'welcome',
@@ -312,6 +319,10 @@ class Server extends EventEmitter {
 	}
 
 	createHTTPServer() {
+		if (!this.options.api) {
+			return;
+		}
+
 		this.http = http.createServer((req, response) => {
 			response.setHeader('Access-Control-Allow-Origin', '*');
 
@@ -347,8 +358,12 @@ class Server extends EventEmitter {
 			const routes = [{
 				match: /.*historical\/(\d+)\/(\d+)(?:\/(\d+))?\/?$/,
 				response: (from, to, timeframe) => {
+          if (!this.storage) {
+            return;
+          }
+
 					showHelloWorld = false;
-					response.setHeader('Content-Type', 'application/json');
+          response.setHeader('Content-Type', 'application/json');
 
 					if (this.lockFetch) {
 						setTimeout(function() {
@@ -364,12 +379,12 @@ class Server extends EventEmitter {
 						return;
 					}
 
-					let maxFetchInterval = 1000 * 60 * 60 * 4; 
+					let maxFetchInterval = 1000 * 60 * 60 * 8;
 
 					if (this.storage.format === 'tick') {
 						maxFetchInterval *= 365;
 
-						timeframe = parseInt(timeframe) || 1000 * 60; // default to 1m					
+						timeframe = parseInt(timeframe) || 1000 * 60; // default to 1m
 						from = Math.floor(from / timeframe) * timeframe;
 						to = Math.floor(to / timeframe) * timeframe;
 
@@ -454,7 +469,7 @@ class Server extends EventEmitter {
 			}
 
 			if (!response.finished && showHelloWorld) {
-				response.writeHead(404);
+				response.writeHead(200);
 				response.end(`
 					<!DOCTYPE html>
 					<html>
@@ -638,39 +653,6 @@ class Server extends EventEmitter {
 	}
 
 	updatePersistence() {
-		if (this.stats.ips) {
-			let clients = this.stats.ips;
-			let archived = 0;
-
-			if (fs.existsSync('./clients.txt')) {
-				clients = (fs.readFileSync('./clients.txt', 'utf8') || '')
-					.trim()
-					.split("\n")
-					.filter(a => a.length);
-
-				clients = clients
-					.concat(this.stats.ips);
-
-				clients = clients.filter((a, i) => clients.indexOf(a) === i);
-
-				this.stats.unique = clients.length;
-			} else {
-				this.stats.unique = this.stats.ips.length;
-			}
-
-			this.stats.ips.length && console.log(`[clean] wiped ${this.stats.ips.length} ips from memory`);
-
-			this.emit('unique', this.stats.unique);
-
-			this.stats.ips = [];
-
-			fs.writeFile('clients.txt', clients.join("\n"), err => {
-				if (err) {
-					console.error(`[persistence] Failed to write clients.txt\n\t`, err);
-				}
-			});
-		}
-
 		return new Promise((resolve, reject) => {
 			fs.writeFile('persistence.json', JSON.stringify({
 				stats: this.stats,

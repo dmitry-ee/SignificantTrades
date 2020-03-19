@@ -1,12 +1,11 @@
-const Exchange = require('../exchange');
-const Pusher = require('pusher-js');
+const Exchange = require('../exchange')
+const WebSocket = require('ws')
 
 class Bitstamp extends Exchange {
+  constructor(options) {
+    super(options)
 
-	constructor(options) {
-		super(options);
-
-		this.id = 'bitstamp';
+    this.id = 'bitstamp'
 
     this.pairs = [
       'LTCUSD',
@@ -24,55 +23,80 @@ class Bitstamp extends Exchange {
       'XRPUSD',
       'ETHBTC',
       'ETHEUR'
-    ];
+    ]
 
-		this.mapping = pair => {
+    this.mapping = pair => {
       if (this.pairs.indexOf(pair) !== -1) {
-        return pair.toLowerCase();
+        return pair.toLowerCase()
       }
 
-      return false;
+      return false
     }
 
-		this.options = Object.assign({
-			appId: 'de504dc5763aeef9ff52',
-			channel: 'live_trades',
-			bind: 'trade',
-		}, this.options);
-	}
+    this.options = Object.assign(
+      {
+        url: () => {
+          return `wss://ws.bitstamp.net`
+        }
+      },
+      this.options
+    )
+  }
 
-	connect(pair) {
-    if (!super.connect(pair))  
-      return;
+  connect(pair) {
+    if (!super.connect(pair)) return
 
-    this.api = new Pusher(this.options.appId);
-    const channel = this.api.subscribe(this.options.channel + (this.pair === 'btcusd' ? '' : '_' + this.pair));
+    this.api = new WebSocket(this.getUrl())
 
-    this.api.bind(this.options.bind, trade => this.emitData(this.format(trade)));
+    this.api.onmessage = event => this.emitData(this.format(JSON.parse(event.data)))
 
-    this.api.connection.bind('error', this.emitError.bind(this));
-    this.api.connection.bind('connected', this.emitOpen.bind(this));
-    this.api.connection.bind('disconnected', this.emitClose.bind(this));
-	}
+    this.api.onopen = event => {
+      this.api.send(
+        JSON.stringify({
+          event: 'bts:subscribe',
+          data: {
+            channel: 'live_trades_' + this.pair
+          }
+        })
+      )
 
-	disconnect() {
-    if (!super.disconnect())  
-      return;
-      
-    if (this.api && this.api.connection.state === 'connected') {
-      this.api.disconnect();
+      this.emitOpen(event)
     }
-	}
 
-	format(trade) {
-    return [[
-      +new Date(trade.timestamp * 1000),
-      trade.price,
-      trade.amount,
-      trade.type === 0 ? 1 : 0,
-    ]];
-	}
+    this.api.onclose = event => {
+      this.emitClose(event)
 
+      clearInterval(this.keepalive)
+    }
+
+    this.api.onerror = this.emitError.bind(this, { message: 'Websocket error' })
+  }
+
+  disconnect() {
+    if (!super.disconnect()) return
+
+    if (this.api && this.api.readyState < 2) {
+      this.api.disconnect()
+    }
+  }
+
+  format(json) {
+    const trade = json.data
+
+    if (!trade || !trade.amount) {
+      return
+    }
+
+    return [
+      [
+        this.id,
+        +new Date(trade.microtimestamp / 1000),
+        trade.price,
+        trade.amount,
+        trade.type === 0 ? 1 : 0
+      ]
+    ]
+  }
 }
 
-module.exports = Bitstamp;
+module.exports = Bitstamp

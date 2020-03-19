@@ -73,6 +73,7 @@ class Bybit extends Exchange {
     }
 
     return json.data.map((trade) => [
+      this.id,
       +new Date(trade.timestamp),
       +trade.price,
       trade.size / trade.price,

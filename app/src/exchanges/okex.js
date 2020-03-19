@@ -9,9 +9,10 @@ class Okex extends Exchange {
 
     this.id = 'okex'
 
-    this.liquidatableProducts = []
-    this.liquidatableProductsIndex = 0
-    this.liquidatableProductsReferences = {}
+    this.lqProducts = []
+    this.lqProductsIndex = 0
+    this.lqProductsTimestamps = {}
+    this.lqProductsContractValues = {}
 
     this.mapping = pair => {
       let id = this.pairs[pair] || this.pairs[pair.replace(/USDT/i, 'USD')]
@@ -512,7 +513,7 @@ class Okex extends Exchange {
 
     this.options = Object.assign(
       {
-        url: 'wss://real.okex.com:10442/ws/v3'
+        url: 'wss://real.okex.com:8443/ws/v3'
       },
       this.options
     )
@@ -588,7 +589,7 @@ class Okex extends Exchange {
         size = ((trade.size || trade.qty) * (/^BTC/.test(this.pair) ? 100 : 10)) / trade.price
       }
 
-      return [+new Date(trade.timestamp), +trade.price, size, trade.side === 'buy' ? 1 : 0]
+      return [this.id, +new Date(trade.timestamp), +trade.price, size, trade.side === 'buy' ? 1 : 0]
     })
   }
 
@@ -599,24 +600,24 @@ class Okex extends Exchange {
       }
     }
 
+    this.lqProductsContractValues = {}
+
     response.forEach(product => {
       const pair = (
         (product.base_currency ? product.base_currency : product.underlying_index) +
-        product.quote_currency.replace(/usdt$/i, 'USD')
+        product.quote_currency
       ).toUpperCase() // base+quote ex: BTCUSD
 
+      this.lqProductsContractValues[product.instrument_id] = +product.contract_val;
 
       switch (type) {
         case 'spot':
-          console.log('register pair', pair, 'to', product.instrument_id)
           this.pairs[pair] = product.instrument_id
           break
         case 'swap':
-          console.log('register pair', pair + '-SWAP', 'to', product.instrument_id)
           this.pairs[pair + '-SWAP'] = product.instrument_id
           break
         case 'futures':
-          console.log('register pair', pair + '-' + product.alias.toUpperCase(), 'to', product.instrument_id)
           this.pairs[pair + '-' + product.alias.toUpperCase()] = product.instrument_id
           break
       }
@@ -644,10 +645,8 @@ class Okex extends Exchange {
       msUntilExpiration += 1000 * 60 * 60 * 24 * 7
     }
 
-    console.log('will expire after', msUntilExpiration, 'ms')
-
     const setupTimer = () => {
-      console.log('will getProducts at', new Date(+new Date() + msUntilExpiration))
+      console.log('[okex] schedule get futures products', new Date(+new Date() + msUntilExpiration))
 
       this.periodicFuturesRefreshTimeout = setTimeout(() => {
         msUntilExpiration = 1000 * 60 * 60 * 24 * 7
@@ -664,33 +663,31 @@ class Okex extends Exchange {
   initPeriodicLiquidationsRefresh() {
     clearInterval(this.periodicLiquidationsRefreshInterval);
 
-    this.liquidatableProducts = []
-    this.liquidatableProductsReferences = {}
+    this.lqProducts = []
+    this.lqProductsTimestamps = {}
 
     const now = +new Date()
     const products = Object.keys(this.pairs)
-    console.log('initPeriodicLiquidationsRefresh')
 
     for (let i = 0; i < products.length; i++) {
       if (new RegExp('^' + this.pair.split('-')[0] + 'USD-').test(products[i])) {
-        console.log('add', products[i], this.pairs[products[i]], 'to liquidatable products')
-        this.liquidatableProducts.push(this.pairs[products[i]])
-        this.liquidatableProductsReferences[this.pairs[products[i]]] = now
+        this.lqProducts.push(this.pairs[products[i]])
+        this.lqProductsTimestamps[this.pairs[products[i]]] = now
       }
     }
 
-    if (!this.liquidatableProducts.length) {
+    if (!this.lqProducts.length) {
       return
     }
 
-    this.liquidatableProductsIndex = 0
+    this.lqProductsIndex = 0
 
     this.periodicLiquidationsRefreshInterval = setInterval(() => {
       this.getLiquidations(
-        this.liquidatableProducts[this.liquidatableProductsIndex % this.liquidatableProducts.length]
+        this.lqProducts[this.lqProductsIndex % this.lqProducts.length]
       )
 
-      this.liquidatableProductsIndex++
+      this.lqProductsIndex++
     }, 1500)
   }
 
@@ -699,7 +696,7 @@ class Okex extends Exchange {
 
     const token = axios.CancelToken
     this.productRequest = token.source()
-    console.log('getProducts', type);
+    console.log('[okex] getProducts', type);
 
     return axios
       .get(`https://www.okex.com/api/${type}/v3/instruments`)
@@ -743,8 +740,8 @@ class Okex extends Exchange {
 
         const liquidations = response.data.filter(a => {
           return (
-            !this.liquidatableProductsReferences[instrumentId] ||
-            +new Date(a.created_at) > this.liquidatableProductsReferences[instrumentId]
+            !this.lqProductsTimestamps[instrumentId] ||
+            +new Date(a.created_at) > this.lqProductsTimestamps[instrumentId]
           )
         })
 
@@ -752,14 +749,16 @@ class Okex extends Exchange {
           return
         }
 
-        this.liquidatableProductsReferences[instrumentId] = +new Date(liquidations[0].created_at)
+         // console.log(type, instrumentId, liquidations.map(trade => trade.price + ' * ' + trade.size + ' (' + ((trade.size * this.lqProductsContractValues[instrumentId]) / trade.price) + ')'))
+
+        this.lqProductsTimestamps[instrumentId] = +new Date(liquidations[0].created_at)
 
         this.emitData(
           liquidations.map(trade => {
             const timestamp = +new Date(trade.created_at)
-            const size = (trade.size * (/^BTC/.test(this.pair) ? 100 : 10)) / trade.price
+            const size = (trade.size * this.lqProductsContractValues[instrumentId]) / trade.price
 
-            return [timestamp, +trade.price, size, trade.type === '4' ? 1 : 0, 1]
+            return [this.id, timestamp, +trade.price, size, trade.type === '4' ? 1 : 0, 1]
           })
         )
       })

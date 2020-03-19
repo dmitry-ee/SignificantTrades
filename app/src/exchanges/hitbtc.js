@@ -656,7 +656,7 @@ class Huobi extends Exchange {
 	}
 
 	connect(pair) {
-    if (!super.connect(pair))  
+    if (!super.connect(pair))
       return;
 
     this.api = new WebSocket(this.getUrl());
@@ -698,6 +698,7 @@ class Huobi extends Exchange {
 
 		if (json.method === 'updateTrades' && json.params && json.params.data && json.params.data.length) {
 			return json.params.data.map(trade => [
+        this.id,
 				+new Date(trade.timestamp),
 				+trade.price,
 				+trade.quantity,

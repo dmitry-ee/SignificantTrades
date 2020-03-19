@@ -38,7 +38,7 @@ class Gdax extends Exchange {
 	}
 
 	connect(pair) {
-    if (!super.connect(pair))  
+    if (!super.connect(pair))
       return;
 
 		this.api = new WebSocket(this.getUrl());
@@ -49,8 +49,9 @@ class Gdax extends Exchange {
 
       let obj = JSON.parse(data);
 
-      if (obj && obj.type === 'match') {
+      if (obj && obj.size > 0) {
         this.emitData([[
+          this.id,
           +new Date(obj.time),
           +obj.price,
           +obj.size,
@@ -62,7 +63,7 @@ class Gdax extends Exchange {
 		this.api.on('open', event => {
       this.api.send(JSON.stringify({
         type: 'subscribe',
-        channels: [{"name": "full", "product_ids": [this.pair]}]
+        channels: [{"name": "matches", "product_ids": [this.pair]}]
       }));
 
       this.emitOpen(event);

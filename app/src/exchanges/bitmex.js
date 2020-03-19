@@ -26,7 +26,7 @@ class Bitmex extends Exchange {
 	}
 
 	connect(pair) {
-    if (!super.connect(pair))  
+    if (!super.connect(pair))
       return;
 
 		this.api = new WebSocket(this.getUrl());
@@ -40,7 +40,7 @@ class Bitmex extends Exchange {
 	}
 
 	disconnect() {
-    if (!super.disconnect())  
+    if (!super.disconnect())
       return;
 
 		if (this.api && this.api.readyState < 2) {
@@ -55,6 +55,7 @@ class Bitmex extends Exchange {
 			if (json.table === 'liquidation' && json.action === 'insert') {
 				return json.data.map(trade => {
 					return [
+            this.id,
 						+new Date(),
 						trade.price,
 						trade.leavesQty / trade.price,
@@ -63,8 +64,9 @@ class Bitmex extends Exchange {
 					]
 				});
 			} else if (json.table === 'trade' && json.action === 'insert') {
-				return json.data.map(trade => {					
+				return json.data.map(trade => {
 					return [
+            this.id,
 						+new Date(trade.timestamp),
 						trade.price,
 						trade.size / trade.price,

@@ -156,7 +156,7 @@ class Kraken extends Exchange {
 
   format(json) {
     if (json && json[1] && json[1].length) {
-      return json[1].map(trade => [trade[2] * 1000, +trade[0], +trade[1], trade[3] === 'b' ? 1 : 0])
+      return json[1].map(trade => [this.id, trade[2] * 1000, +trade[0], +trade[1], trade[3] === 'b' ? 1 : 0])
     }
 
     return false

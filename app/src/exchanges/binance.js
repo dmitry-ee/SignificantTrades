@@ -326,7 +326,7 @@ class Binance extends Exchange {
 	}
 
 	connect(pair) {
-    if (!super.connect(pair))  
+    if (!super.connect(pair))
       return;
 
     this.api = new WebSocket(this.getUrl(this.mapping[pair]));
@@ -341,7 +341,7 @@ class Binance extends Exchange {
 	}
 
 	disconnect() {
-    if (!super.disconnect())  
+    if (!super.disconnect())
       return;
 
     if (this.api && this.api.readyState < 2) {
@@ -354,14 +354,13 @@ class Binance extends Exchange {
 
     if (trade && trade.t) {
       return [[
+        this.id,
         trade.E,
         +trade.p,
         +trade.q,
         trade.m ? 0 : 1
       ]]
     }
-
-		return false;
 	}
 
 }

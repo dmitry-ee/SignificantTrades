@@ -30,13 +30,16 @@ if (process.argv.length > 2) {
 	let exchanges = [];
 
 	process.argv.slice(2).forEach(arg => {
-		let keyvalue = arg.split('=');
-		console.log(keyvalue)
-
+		const keyvalue = arg.split('=');
+		
 		if (keyvalue.length === 1) {
 			exchanges.push(arg);
 		} else {
-			config[keyvalue[0]] = keyvalue[1];
+			try {
+				config[keyvalue[0]] = JSON.parse(keyvalue[1]);
+			} catch (error) {
+				config[keyvalue[0]] = keyvalue[1];
+			}
 		}
 	})
 

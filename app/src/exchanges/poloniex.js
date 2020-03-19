@@ -116,7 +116,7 @@ class Poloniex extends Exchange {
 	}
 
 	connect(pair) {
-    if (!super.connect(pair))  
+    if (!super.connect(pair))
       return;
 
     this.api = new WebSocket(this.getUrl());
@@ -153,9 +153,10 @@ class Poloniex extends Exchange {
     if (!json || json.length !== 3) {
       return;
     }
-		
+
 		if (json[2] && json[2].length) {
 			return json[2].filter(result => result[0] === 't').map(trade => [
+        this.id,
 				+new Date(trade[5] * 1000),
 				+trade[3],
 				+trade[4],
