@@ -12,6 +12,8 @@ all: build up
 
 build:
 	docker-compose build
+build-arm:
+	docker build -t $(DOCKER_ID_USER)/$(APP_NAME):$(APP_VERSION)-arm -f Dockerfile-arm .
 
 config:
 	docker-compose config
