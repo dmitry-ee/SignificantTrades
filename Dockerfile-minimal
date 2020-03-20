@@ -1,0 +1,30 @@
+FROM  mhart/alpine-node:12.1 as builder
+COPY  app/package.json /
+RUN   set ex && npm install --production
+
+FROM  mhart/alpine-node:slim-12.1
+ARG   APP_DIR=/app
+WORKDIR ${APP_DIR}
+
+LABEL version=${VERSION}
+MAINTAINER Dmitry E <https://github.com/dmitry-ee>
+
+COPY  docker-entrypoint.sh ${APP_DIR}
+
+RUN   apk add --no-cache bash && \
+      rm -rf /lib/apk/db && \
+      chmod +x docker-entrypoint.sh && \
+      rm -rf /var/lib/apt/lists/*
+
+COPY  --from=builder /node_modules  ${APP_DIR}/node_modules
+COPY  ${APP_DIR}/src      ${APP_DIR}/src
+COPY  ${APP_DIR}/index.js ${APP_DIR}/config.json.example   ${APP_DIR}/
+
+ARG EXPORTER_VERSION=0.0.0
+ARG VCS_REF
+ARG BUILD_DATE
+
+ENV         PATH=.:$PATH
+ENTRYPOINT  ["docker-entrypoint.sh"]
+
+CMD ["run"]
