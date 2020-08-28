@@ -1,11 +1,11 @@
 {
   "name": "significanttrades-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Live BTCUSD trades visualizer from every exchanges.",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -19,8 +19,12 @@
   "homepage": "https://github.com/Tucsky/SignificantTrades#readme",
   "dependencies": {
     "axios": "^0.18.0",
+    "decamelize": "^4.0.0",
     "elasticsearch": "^15.1.1",
+    "express": "^4.17.1",
+    "express-rate-limit": "^5.1.1",
     "influx": "^5.0.7",
+    "node-q": "^2.5.0",
     "pako": "^1.0.6",
     "pmx": "^1.6.4",
     "pusher-js": "^4.2.2",

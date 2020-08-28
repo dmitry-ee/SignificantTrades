@@ -5,6 +5,10 @@ build_date := `date -u +"%Y-%m-%dT%H:%M:%SZ"`
 commit := `git rev-parse --short HEAD`
 app_version := `date -u +"%d.%m.%y"`
 
+export DOCKER_ID_USER := docker_user_id
+export APP_NAME := app_name
+export APP_VERSION := app_version
+
 app_forward:
   cd app && \
   git pull
@@ -25,9 +29,8 @@ release +comment:
 
 _build BUILD_ARGS="--squash --no-cache" DOCKERFILE=".":
 	docker build {{BUILD_ARGS}} -t {{docker_image_name}} \
-	--build-arg EXPORTER_VERSION={{app_version}} \
 	--build-arg BUILD_DATE={{build_date}} \
-	--build-arg VCS_REF={{commit}} -f {{DOCKERFILE}} .
+	-f {{DOCKERFILE}} .
 build-c: (_build "--squash" "Dockerfile-minimal")
 build-nc: (_build "--squash --no-cache")
 
@@ -37,6 +40,8 @@ compose:
   docker-compose up -d {{app_name}}
 compose-down:
   docker-compose down
+restart:
+	just compose-down && just compose
 logs:
   docker logs {{app_name}}
 

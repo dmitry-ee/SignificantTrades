@@ -20,6 +20,17 @@ node index
 
 ...
 
+## How to install: Docker
+
+```
+➜ docker-compose build
+➜ docker-compose up -d
+```
+This will give you a running server on <http://127.0.0.1:3000> with mounted `./data` volume.
+See `./env` file for some basic configuration.
+Watch logs using `docker logs -f st-server`.
+Uncomment `influx` part in `docker-compose.yml` and set `STORAGE=influx` in `.env` to start using influxdb as a storage.
+
 5. Profit !
 
 ## Configuration
@@ -27,12 +38,12 @@ All settings are optional and can be changed in the [server configuration file](
 
 ```js
 {
-  // the port which the server will be served at 
+  // the port which the server will be served at
   "port": 3000,
-  
+
   // delay (in ms) between server each broadcast to avoid saturation
   "delay": 200, // (the higher the better performance wise)
-  
+
   // pair used by the server
   "pair": "BTCUSD"
 
@@ -51,13 +62,13 @@ All settings are optional and can be changed in the [server configuration file](
   // enable websocket server on startup
   websocket: true,
 
-  // storage solution, either 
+  // storage solution, either
   // "none" (no storage, everything is wiped out after broadcast)
   // "files" (periodical text files),
   // "influx" (time serie database),
   // "es" (experimental)
   storage: 'files',
-  
+
   // store interval (in ms)
   backupInterval: 1000 * 60,
 
@@ -69,6 +80,9 @@ All settings are optional and can be changed in the [server configuration file](
 
   // create new text file every N ms when storage is set to "file"
   filesInterval: 3600000,
+
+  // directory where data files will be created
+  filesLocation: "./data"
 }
 ```
 

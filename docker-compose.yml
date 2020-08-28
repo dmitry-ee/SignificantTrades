@@ -7,8 +7,6 @@ services:
       context: .
     container_name: ${APP_NAME}
     network_mode: "host"
-    ports:
-      - ${STS_DEFAULT_PORT}:${STS_DEFAULT_PORT}
     restart: always
 
 #NOTE: you could supply environment vars with directive:>

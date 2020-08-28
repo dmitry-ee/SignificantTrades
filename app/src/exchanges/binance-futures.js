@@ -61,10 +61,19 @@ class BinanceFutures extends Exchange {
     const trade = JSON.parse(event)
 
     if (trade && trade.data) {
-      if (trade.data.e === 'trade') {
+      if (trade.data.e === 'trade' && trade.data.X !== 'INSURANCE_FUND') {
         return [[this.id, trade.data.T, +trade.data.p, +trade.data.q, trade.data.m ? 0 : 1]]
       } else if (trade.data.e === 'forceOrder') {
-        return [[this.id, trade.data.o.T, +trade.data.o.p, +trade.data.o.q, trade.data.o.S === 'BUY' ? 1 : 0, 1]]
+        return [
+          [
+            this.id,
+            trade.data.o.T,
+            +trade.data.o.p,
+            +trade.data.o.q,
+            trade.data.o.S === 'BUY' ? 1 : 0,
+            1
+          ]
+        ]
       }
     }
 

@@ -97,7 +97,7 @@ class Ftx extends Exchange {
     if (!super.disconnect()) return
 
     if (this.api && this.api.readyState < 2) {
-      this.api.disconnect()
+      this.api.close()
     }
   }
 
