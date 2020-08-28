@@ -1,4 +1,4 @@
-version: '3'
+version: '2.4'
 
 services:
   significant-trades-server:
@@ -8,6 +8,7 @@ services:
     container_name: ${APP_NAME}
     network_mode: "host"
     restart: always
+    mem_limit: 50m
 
 #NOTE: you could supply environment vars with directive:>
     env_file:

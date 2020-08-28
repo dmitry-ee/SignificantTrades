@@ -10,11 +10,18 @@ class KdbStorage {
     this.kdbHost = options.kdbUrl.split(':')[0]
     this.kdbPort = parseInt(options.kdbUrl.split(':')[1])
     this.kdb = null
+    this.tradesStored = 0
+    this.storeAnnouncementEvery = 60000 * 5 // 5 min
 	}
 
 	connect() {
     console.log(`[storage/kdb] connecting`);
     let self = this;
+
+    setInterval(() => {
+      console.log(`[storage/kdb] ${self.tradesStored} trades saved`)
+      self.tradesStored = 0
+    }, self.storeAnnouncementEvery)
 
 		return new Promise((resolve, reject) => {
 			try {
@@ -26,6 +33,7 @@ class KdbStorage {
 
           kdb.ks(`${self.options.kdbTable}:([]date:\`datetime$();exchange:\`symbol$();pair:\`symbol$();price:\`float$();size:\`float$();side:\`symbol$();liq:\`boolean$())`, err => {
             console.log('[storage/kdb] table `trades created')
+            console.log(`[storage/kdb] to be sure that everything works fine, i'll announce kdb writes every ${Math.round(self.storeAnnouncementEvery/1000/60, 2)}min`)
             if (err) throw(err)
           })
         });
@@ -82,7 +90,7 @@ class KdbStorage {
           console.error(`[storage/kdb] ${err} ${err.stack}\n`)
           reject(err)
         } else {
-          console.log(`[storage/kdb] ${trades.length} trades writed`)
+          self.tradesStored += trades.length
         }
       })
       resolve()
