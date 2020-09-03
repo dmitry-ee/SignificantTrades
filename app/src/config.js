@@ -83,6 +83,12 @@ const DEFAULTS = {
 
   // kdb table
   kdbTable: 'trades',
+
+  // kdb announce every ms
+  kdbStoreAnnouncementEvery: 60000 * 1,
+
+  // min amount*price value (basically USD) to export and broadcast
+  minAmount: 0,
 }
 
 /* Load custom server configuration

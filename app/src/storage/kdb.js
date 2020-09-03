@@ -11,17 +11,38 @@ class KdbStorage {
     this.kdbPort = parseInt(options.kdbUrl.split(':')[1])
     this.kdb = null
     this.tradesStored = 0
-    this.storeAnnouncementEvery = 60000 * 5 // 5 min
-	}
+    this.tradesSkipped = 0
+    this.kdbStoreAnnouncementEvery = this.options.kdbStoreAnnouncementEvery
+
+    // table mapping
+    this.typeMapping = {
+      trades: {
+        time:     nodeq.timespans,
+        sym:      nodeq.symbols,
+        exchange: nodeq.symbols,
+        price:    nodeq.floats,
+        size:     nodeq.floats,
+        side:     nodeq.chars,
+        liq:      nodeq.booleans,
+      }
+    }
+  }
+  
+  flipArray(arrayOfObj) {
+    return Object.assign(...Object.keys(arrayOfObj[0]).map( key =>
+      ({ [key]: arrayOfObj.map( o => o[key] ) })
+    ))
+  }
 
 	connect() {
     console.log(`[storage/kdb] connecting`);
     let self = this;
 
     setInterval(() => {
-      console.log(`[storage/kdb] ${self.tradesStored} trades saved`)
+      console.log(`[storage/kdb] ${self.tradesStored}/${self.tradesSkipped} trades saved/skipped`)
       self.tradesStored = 0
-    }, self.storeAnnouncementEvery)
+      self.tradesSkipped = 0
+    }, self.kdbStoreAnnouncementEvery)
 
 		return new Promise((resolve, reject) => {
 			try {
@@ -31,11 +52,11 @@ class KdbStorage {
           console.log(`[storage/kdb] connected to ${self.kdbHost}:${self.kdbPort}`);
           self.kdb = kdb
 
-          kdb.ks(`${self.options.kdbTable}:([]date:\`datetime$();exchange:\`symbol$();pair:\`symbol$();price:\`float$();size:\`float$();side:\`symbol$();liq:\`boolean$())`, err => {
-            console.log('[storage/kdb] table `trades created')
-            console.log(`[storage/kdb] to be sure that everything works fine, i'll announce kdb writes every ${Math.round(self.storeAnnouncementEvery/1000/60, 2)}min`)
-            if (err) throw(err)
-          })
+          // kdb.ks(`${self.options.kdbTable}:([]date:\`date$();time:\`time$();exchange:\`symbol$();pair:\`symbol$();price:\`float$();size:\`float$();side:\`char$();liq:\`boolean$())`, err => {
+          console.log(`[storage/kdb] using table ${self.options.kdbTable}`)
+          console.log(`[storage/kdb] to be sure that everything works fine, i'll announce kdb writes every ${Math.round(self.kdbStoreAnnouncementEvery/1000)} sec`)
+            // if (err) throw(err)
+          // })
         });
         resolve()
       } catch (error) {
@@ -45,52 +66,50 @@ class KdbStorage {
     })
   }
 
-  formatTradeForKdb(trade) {
-          
+  formatTradeForKdbUpd(trade) {
     return {
-      date: new Date(trade[1]), 
-      exchange: `\`${trade[0]}`, 
-      // "exchange": trade[0],
-      pair: `\`${this.options.pair}`, 
-      // "pair": this.options.pair,
-      price: trade[2], 
-      size: trade[3], 
-      side: trade[4] == 1 ? "`long" : "`short", 
-      // "side": trade[4] == 1 ? "long" : "short",
-      liq: trade[5] != null
+      time: new Date(trade[1]),
+      sym:  this.options.pair,
+      exchange: trade[0],
+      price: trade[2],
+      size: trade[3],
+      side: trade[4] == 1 ? "L" : "S",
+      liq: trade[5] != null,
     }
-    // return [
-    //   nodeq.timestamp(new Date(trade[1])),
-    //   `\`${trade[0]}`,
-    //   `\`${this.options.pair}`,
-    //   trade[2],
-    //   trade[3],
-    //   trade[4] == 1 ? "`long" : "`short",
-    //   trade[5] == null ? 0 : 1,
-    // ]
+  }
+
+  flipAndFormatTradesForKdbUpd(trades) {
+    const formattedTrades = trades.map(x => this.formatTradeForKdbUpd(x))
+    const flippedTrades = this.flipArray(formattedTrades)
+    const res = []
+    // return flippedTrades
+    for (let k of Object.keys(flippedTrades)) {
+      const mappingFn = this.typeMapping["trades"][k]
+      res.push(mappingFn ? mappingFn(flippedTrades[k]) : flippedTrades[k])
+    }
+    return res
   }
 
   save(chunk) {
     let self = this;
 
-		if (!chunk || !chunk.length) {
-			return Promise.resolve();
-		}
+    const tradesBefore = chunk.length
+    chunk = chunk.filter(trade => (trade[3]*trade[2]) > self.options.minAmount)
 
-    const trades = [];
-
-    for (let c of chunk) {
-      trades.push(this.formatTradeForKdb(c))
+		if (!chunk || !chunk.length || chunk.length == 0) {
+			return Promise.resolve()
     }
     
     return new Promise((resolve, reject) => {
-      // const q = `\`trades insert (${JSON.stringify(trades[0])})`
-      self.kdb.k(`\`${self.options.kdbTable} insert`, trades, (err) => {
+      const flippedAndFormattedTrades = self.flipAndFormatTradesForKdbUpd(chunk)
+
+      self.kdb.k('.u.upd', nodeq.symbol(self.options.kdbTable), flippedAndFormattedTrades, (err) => {
         if (err) {
           console.error(`[storage/kdb] ${err} ${err.stack}\n`)
           reject(err)
         } else {
-          self.tradesStored += trades.length
+          self.tradesStored += chunk.length
+          self.tradesSkipped += (tradesBefore - chunk.length)
         }
       })
       resolve()
